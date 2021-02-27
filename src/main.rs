@@ -39,7 +39,7 @@ fn main() {
 
     let languages: (&str, &str) = match matches.value_of("LANGUAGES") {
         Some(data) => {
-            let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "rs", "es"];
+            let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es"];
 
             if data.chars().count() != 5 {
                 malformed_language();
@@ -92,7 +92,7 @@ fn match_language(lang: &str) -> Language {
         "de" => Language::German,
         "it" => Language::Italian,
         "pt" => Language::Portuguese,
-        "rs" => Language::Russain,
+        "ru" => Language::Russain,
         "es" => Language::Spanish,
         &_ => panic!("Other value for lang..."),
     };
@@ -110,7 +110,7 @@ fn translate_error(error: TranslateError) {
 
 fn malformed_language() {
     eprintln!("{} Unknown language.\n", "error:".red().bold());
-    eprintln!("Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"rs\", \"es\"]\n");
+    eprintln!("Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]\n");
     eprintln!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>\n");
     eprintln!("For more information try {}", "--help".green());
     std::process::exit(1);

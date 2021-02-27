@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "libretranslate"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7ae69bd3524a2d1a9dc0a94b9298a3cc0b258494f2c8c5219dec17d25cbeeaf"
+checksum = "b0b38f10e790f6c6dde5a5cf657ca98f1c02315ffe00f8d13576666f592a4671"
 dependencies = [
  "serde_json",
  "ureq",

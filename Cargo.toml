@@ -1,6 +1,6 @@
 [package]
 name = "libretrans"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["DefunctLizard <grantshandy@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
@@ -13,5 +13,5 @@ keywords = ["translate", "language", "libretranslate", "translation"]
 
 [dependencies]
 clap = "2.33.3"
-libretranslate = "0.1.7"
+libretranslate = "0.1.8"
 colored = "2.0.0"
