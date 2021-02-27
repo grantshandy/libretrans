@@ -1,37 +1,26 @@
-use clap::{crate_version, App, Arg};
-use libretranslate::Language;
+use clap::{crate_version, App, Arg, ArgMatches};
+use libretranslate::{Translator, Language, TranslateError};
+use colored::Colorize;
 
 fn main() {
     // Set CLI application details through clap.
     let matches = App::new("libretrans")
         .version(crate_version!())
-        .author("Grant H. <grantshandy@gmail.com>")
+        .author("Grant Handy <grantshandy@gmail.com>")
         .about("Translates text from one language to another")
         .arg(
             Arg::with_name("TEXT")
                 .help("what text to translate")
                 .required(true)
-                .index(1),
+                .takes_value(true)
+                .index(2),
         )
         .arg(
-            Arg::with_name("input")
-                .long("input")
-                .short("i")
-                .help("choose what language to translate from")
-                .takes_value(true)
+            Arg::with_name("LANGUAGES")
+                .help("choose what languages to translate from")
                 .required(true)
-                .multiple(false)
-                .possible_values(&["en", "ar", "zh", "fr", "de", "it", "pt", "rs", "es"]),
-        )
-        .arg(
-            Arg::with_name("output")
-                .long("output")
-                .short("o")
-                .help("choose what language to translate to")
                 .takes_value(true)
-                .required(true)
-                .multiple(false)
-                .possible_values(&["en", "ar", "zh", "fr", "de", "it", "pt", "rs", "es"]),
+                .index(1)
         )
         .arg(
             Arg::with_name("verbose")
@@ -43,79 +32,86 @@ fn main() {
         )
         .get_matches();
 
-    let input_language: Language = match matches.value_of("input") {
-        Some("en") => Language::English,
-        Some("ar") => Language::Arabic,
-        Some("zh") => Language::Chinese,
-        Some("fr") => Language::French,
-        Some("de") => Language::German,
-        Some("it") => Language::Italian,
-        Some("pt") => Language::Portuguese,
-        Some("rs") => Language::Russain,
-        Some("es") => Language::Spanish,
-        Some(&_) => {
-            eprintln!("DIFFERENT VALUE FOR INPUT LANGUAGE... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
-        None => {
-            eprintln!("NO VALUE FOR INPUT LANGUAGE... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
-    };
-
-    let output_language: Language = match matches.value_of("output") {
-        Some("en") => Language::English,
-        Some("ar") => Language::Arabic,
-        Some("zh") => Language::Chinese,
-        Some("fr") => Language::French,
-        Some("de") => Language::German,
-        Some("it") => Language::Italian,
-        Some("pt") => Language::Portuguese,
-        Some("rs") => Language::Russain,
-        Some("es") => Language::Spanish,
-        Some(&_) => {
-            eprintln!("DIFFERENT VALUE FOR OUTPUT LANGUAGE... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
-        None => {
-            eprintln!("NO VALUE FOR OUTPUT LANGUAGE... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
-    };
-
-    let input_lang_str: String = match matches.value_of("input") {
-        Some(data) => data.to_string(),
-        None => {
-            eprintln!("NO VALUE FOR INPUT LANGUAGE... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
-    };
-
-    let output_lang_str: String = match matches.value_of("output") {
-        Some(data) => data.to_string(),
-        None => {
-            eprintln!("NO VALUE FOR OUTPUT LANGUAGE... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
-    };
-
     let text = match matches.value_of("TEXT") {
-        Some(text) => text,
-        None => {
-            eprintln!("NO VALUE FOR TEXT... EXTREMELY UNEXPECTED!");
-            std::process::exit(1);
-        }
+        Some(data) => data,
+        None => panic!("No value to TEXT..."),
     };
 
-    match libretranslate::translate(input_language, output_language, text) {
-        Ok(data) => {
-            if matches.is_present("verbose") {
-                println!("{} source: \"{}\"", input_lang_str, text);
-                println!("{} output: \"{}\"", output_lang_str, data);
-            } else {
-                println!("{}", data);
+    let languages: (&str, &str) = match matches.value_of("LANGUAGES") {
+        Some(data) => {
+            let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "rs", "es"];
+
+            if data.chars().count() != 5 {
+                malformed_language();
             };
-        }
-        Err(error) => eprintln!("Translation error: {}", error),
+
+            if data.chars().nth(2).unwrap() != ':' {
+                malformed_language();
+            };
+
+            let split: Vec<&str> = data.split(':').collect();
+
+            if split.len() != 2 {
+                malformed_language();
+            };
+
+            for x in &split {
+                if !langs.contains(&x) {
+                    malformed_language();
+                };
+            };
+
+            (split.get(0).unwrap(), split.get(1).unwrap())
+        },
+        None => panic!("No value for languages..."),
     };
+
+    let input_lang = match_language(languages.0);
+    let output_lang = match_language(languages.1);
+
+    match Translator::translate(input_lang, output_lang, text) {
+        Ok(data) => print_data(data, matches.clone()),
+        Err(error) => translate_error(error),
+    };
+}
+
+fn print_data(data: Translator, matches: ArgMatches) {
+    if matches.is_present("verbose") {
+        println!("{}: {}\n{}: {}", data.source.pretty(), data.input, data.target.pretty(), data.output);
+    } else {
+        println!("{}", data.output);
+    }
+}
+
+fn match_language(lang: &str) -> Language {
+    let language: Language = match lang {
+        "en" => Language::English,
+        "ar" => Language::Arabic,
+        "zh" => Language::Chinese,
+        "fr" => Language::French,
+        "de" => Language::German,
+        "it" => Language::Italian,
+        "pt" => Language::Portuguese,
+        "rs" => Language::Russain,
+        "es" => Language::Spanish,
+        &_ => panic!("Other value for lang..."),
+    };
+
+    return language;
+}
+
+fn translate_error(error: TranslateError) {
+    eprintln!("{} Translate Request Error.\n", "error:".red().bold());
+    eprintln!("{}\n", error);
+    eprintln!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>\n");
+    eprintln!("For more information try {}", "--help".green());
+    std::process::exit(1);
+}
+
+fn malformed_language() {
+    eprintln!("{} Unknown language.\n", "error:".red().bold());
+    eprintln!("Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"rs\", \"es\"]\n");
+    eprintln!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>\n");
+    eprintln!("For more information try {}", "--help".green());
+    std::process::exit(1);
 }

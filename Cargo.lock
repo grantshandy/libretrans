@@ -72,6 +72,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "colored"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3616f750b84d8f0de8a58bda93e08e2a81ad3f523089b05f1dffecab48c6cbd"
+dependencies = [
+ "atty",
+ "lazy_static",
+ "winapi",
+]
+
+[[package]]
 name = "form_urlencoded"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -130,17 +141,18 @@ checksum = "1cca32fa0182e8c0989459524dc356b8f2b5c10f1b9eb521b7d182c03cf8c5ff"
 
 [[package]]
 name = "libretrans"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
+ "colored",
  "libretranslate",
 ]
 
 [[package]]
 name = "libretranslate"
-version = "0.1.1"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee7ba51e02016bf467820f72daefc0f982e4a1554e7c9988d0ccceef0399c60f"
+checksum = "a7ae69bd3524a2d1a9dc0a94b9298a3cc0b258494f2c8c5219dec17d25cbeeaf"
 dependencies = [
  "serde_json",
  "ureq",
