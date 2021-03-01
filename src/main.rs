@@ -1,5 +1,5 @@
 use clap::{crate_version, App, Arg, ArgMatches};
-use libretranslate::{Translator, Language, TranslateError};
+use libretranslate::{Translator, Language};
 use colored::Colorize;
 
 fn main() {
@@ -7,17 +7,17 @@ fn main() {
     let matches = App::new("libretrans")
         .version(crate_version!())
         .author("Grant Handy <grantshandy@gmail.com>")
-        .about("Translates text from one language to another")
+        .about("Translates text from one language to another.")
         .arg(
             Arg::with_name("TEXT")
-                .help("what text to translate")
+                .help("What text to translate.")
                 .required(true)
                 .takes_value(true)
-                .index(2),
+                .index(2)
         )
         .arg(
             Arg::with_name("LANGUAGES")
-                .help("choose what languages to translate from")
+                .help("Choose what languages to translate from.\n    Format: <INPUT>:<OUTPUT>\n    Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]\n")
                 .required(true)
                 .takes_value(true)
                 .index(1)
@@ -28,7 +28,7 @@ fn main() {
                 .short("v")
                 .help("run with verbose output")
                 .required(false)
-                .takes_value(false),
+                .takes_value(false)
         )
         .get_matches();
 
@@ -37,27 +37,29 @@ fn main() {
         None => panic!("No value to TEXT..."),
     };
 
+    if text == "" {
+        trans_error("The following required arguments were not provided:", "<TEXT>", true);
+        std::process::exit(1);
+    };
+
     let languages: (&str, &str) = match matches.value_of("LANGUAGES") {
         Some(data) => {
             let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es"];
-
-            if data.chars().count() != 5 {
-                malformed_language();
-            };
+            let possible_langs = "Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]";
 
             if data.chars().nth(2).unwrap() != ':' {
-                malformed_language();
+                trans_error("Malformed language argument: not separated by an ':'", possible_langs, false);
             };
 
             let split: Vec<&str> = data.split(':').collect();
 
             if split.len() != 2 {
-                malformed_language();
+                trans_error("Malformed language argument", possible_langs, false);
             };
 
             for x in &split {
                 if !langs.contains(&x) {
-                    malformed_language();
+                    trans_error("Unknown language", possible_langs, false);
                 };
             };
 
@@ -71,7 +73,7 @@ fn main() {
 
     match Translator::translate(input_lang, output_lang, text) {
         Ok(data) => print_data(data, matches.clone()),
-        Err(error) => translate_error(error),
+        Err(error) => trans_error("Translation request error", &error.to_string(), false),
     };
 }
 
@@ -100,17 +102,15 @@ fn match_language(lang: &str) -> Language {
     return language;
 }
 
-fn translate_error(error: TranslateError) {
-    eprintln!("{} Translate Request Error.\n", "error:".red().bold());
-    eprintln!("{}\n", error);
-    eprintln!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>\n");
-    eprintln!("For more information try {}", "--help".green());
-    std::process::exit(1);
-}
+fn trans_error(error: &str, details: &str, detail_red: bool) {
+    eprintln!("{} {}", "error:".red().bold(), error);
 
-fn malformed_language() {
-    eprintln!("{} Unknown language.\n", "error:".red().bold());
-    eprintln!("Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]\n");
+    if detail_red {
+        eprintln!("    {}\n", details.red().bold());
+    } else {
+        eprintln!("\n{}\n", details);
+    }
+
     eprintln!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>\n");
     eprintln!("For more information try {}", "--help".green());
     std::process::exit(1);
