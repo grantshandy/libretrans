@@ -1,10 +1,10 @@
 [package]
 name = "libretrans"
-version = "0.1.3"
-authors = ["DefunctLizard <grantshandy@gmail.com>"]
+version = "0.1.4"
+authors = ["Grant Handy <grantshandy@gmail.com>"]
 edition = "2018"
 license = "Apache-2.0"
-description = "Open Source Machine Translation CLI"
+description = "A command line tool for translating using the libretranslate API"
 repository = "https://github.com/DefunctLizard/libretrans/"
 documentation = "https://docs.rs/libretrans"
 keywords = ["translate", "language", "libretranslate", "translation"]

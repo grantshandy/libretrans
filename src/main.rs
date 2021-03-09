@@ -16,8 +16,8 @@ fn main() {
                 .index(2)
         )
         .arg(
-            Arg::with_name("LANGUAGES")
-                .help("Choose what languages to translate from.\n    Format: <INPUT>:<OUTPUT>\n    Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]\n")
+            Arg::with_name("INPUT>:<OUTPUT")
+                .help("Choose what languages to translate from.\n    Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]\n")
                 .required(true)
                 .takes_value(true)
                 .index(1)
@@ -38,28 +38,27 @@ fn main() {
     };
 
     if text == "" {
-        trans_error("The following required arguments were not provided:", "<TEXT>", true);
-        std::process::exit(1);
+        trans_error("The following required arguments were not provided:", "<TEXT>", text, matches.clone());
     };
 
-    let languages: (&str, &str) = match matches.value_of("LANGUAGES") {
+    let languages: (&str, &str) = match matches.value_of("INPUT>:<OUTPUT") {
         Some(data) => {
             let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es"];
             let possible_langs = "Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]";
 
             if data.chars().nth(2).unwrap() != ':' {
-                trans_error("Malformed language argument: not separated by an ':'", possible_langs, false);
+                trans_error("Malformed language argument: not separated by an ':'", possible_langs, data, matches.clone());
             };
 
             let split: Vec<&str> = data.split(':').collect();
 
             if split.len() != 2 {
-                trans_error("Malformed language argument", possible_langs, false);
+                trans_error("Malformed language argument", possible_langs, data, matches.clone());
             };
 
             for x in &split {
                 if !langs.contains(&x) {
-                    trans_error("Unknown language", possible_langs, false);
+                    trans_error("Unknown languages", possible_langs, data, matches.clone());
                 };
             };
 
@@ -73,13 +72,13 @@ fn main() {
 
     match Translator::translate(input_lang, output_lang, text) {
         Ok(data) => print_data(data, matches.clone()),
-        Err(error) => trans_error("Translation request error", &error.to_string(), false),
+        Err(error) => trans_error("Translation request error", &error.to_string(), text, matches.clone()),
     };
 }
 
 fn print_data(data: Translator, matches: ArgMatches) {
     if matches.is_present("verbose") {
-        println!("{}: {}\n{}: {}", data.source.pretty(), data.input, data.target.pretty(), data.output);
+        println!("{}: \"{}\"\n{}: \"{}\"", data.source.pretty().green().bold(), data.input, data.target.pretty().green().bold(), data.output);
     } else {
         println!("{}", data.output);
     }
@@ -102,16 +101,23 @@ fn match_language(lang: &str) -> Language {
     return language;
 }
 
-fn trans_error(error: &str, details: &str, detail_red: bool) {
+fn trans_error(error: &str, details: &str, text: &str, matches: ArgMatches) {
     eprintln!("{} {}", "error:".red().bold(), error);
 
-    if detail_red {
+    if text == "" {
         eprintln!("    {}\n", details.red().bold());
     } else {
         eprintln!("\n{}\n", details);
-    }
+    };
 
-    eprintln!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>\n");
+    let verbose: bool = matches.is_present("verbose");
+    
+    if verbose {
+        eprint!("USAGE:\n    libretrans <INPUT>:<OUTPUT> <TEXT> --verbose\n\n");
+    } else {
+        eprint!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>");
+    };
+
     eprintln!("For more information try {}", "--help".green());
     std::process::exit(1);
 }
