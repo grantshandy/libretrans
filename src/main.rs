@@ -17,7 +17,7 @@ fn main() {
         )
         .arg(
             Arg::with_name("INPUT>:<OUTPUT")
-                .help("Choose what languages to translate from.\n    Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]\n")
+                .help("Choose what languages to translate from.\n    Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\", \"ja\"]\n")
                 .required(true)
                 .takes_value(true)
                 .index(1)
@@ -43,8 +43,8 @@ fn main() {
 
     let languages: (&str, &str) = match matches.value_of("INPUT>:<OUTPUT") {
         Some(data) => {
-            let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es"];
-            let possible_langs = "Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\"]";
+            let langs = vec!["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es", "ja"];
+            let possible_langs = "Possible values: [\"en\", \"ar\", \"zh\", \"fr\", \"de\", \"it\", \"pt\", \"ru\", \"es\", \"ja\"]";
 
             if data.chars().nth(2).unwrap() != ':' {
                 trans_error("Malformed language argument: not separated by an ':'", possible_langs, data, matches.clone());
@@ -67,8 +67,8 @@ fn main() {
         None => panic!("No value for languages..."),
     };
 
-    let input_lang = match_language(languages.0);
-    let output_lang = match_language(languages.1);
+    let input_lang = Language::from(languages.0).unwrap();
+    let output_lang = Language::from(languages.1).unwrap();
 
     match Translator::translate(input_lang, output_lang, text) {
         Ok(data) => print_data(data, matches.clone()),
@@ -84,23 +84,6 @@ fn print_data(data: Translator, matches: ArgMatches) {
     }
 }
 
-fn match_language(lang: &str) -> Language {
-    let language: Language = match lang {
-        "en" => Language::English,
-        "ar" => Language::Arabic,
-        "zh" => Language::Chinese,
-        "fr" => Language::French,
-        "de" => Language::German,
-        "it" => Language::Italian,
-        "pt" => Language::Portuguese,
-        "ru" => Language::Russain,
-        "es" => Language::Spanish,
-        &_ => panic!("Other value for lang..."),
-    };
-
-    return language;
-}
-
 fn trans_error(error: &str, details: &str, text: &str, matches: ArgMatches) {
     eprintln!("{} {}", "error:".red().bold(), error);
 
@@ -109,10 +92,8 @@ fn trans_error(error: &str, details: &str, text: &str, matches: ArgMatches) {
     } else {
         eprintln!("\n{}\n", details);
     };
-
-    let verbose: bool = matches.is_present("verbose");
     
-    if verbose {
+    if matches.is_present("verbose") {
         eprint!("USAGE:\n    libretrans <INPUT>:<OUTPUT> <TEXT> --verbose\n\n");
     } else {
         eprint!("USAGE:\n    libretrans [FLAGS] <INPUT>:<OUTPUT> <TEXT>");

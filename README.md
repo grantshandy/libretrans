@@ -25,7 +25,7 @@ $ cargo install --path="."
 
 ## Command Line Arguments
 ```
-libretrans 0.1.4
+libretrans 0.1.5
 Grant Handy <grantshandy@gmail.com>
 Translates text from one language to another.
 
@@ -39,6 +39,6 @@ FLAGS:
 
 ARGS:
     <INPUT>:<OUTPUT>    Choose what languages to translate from.
-                            Possible values: ["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es"]
+                            Possible values: ["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es", "ja"]
     <TEXT>              What text to translate.
 ```
