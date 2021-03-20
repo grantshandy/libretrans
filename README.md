@@ -8,7 +8,7 @@ $ libretrans en:fr "Hello World"
 Bonjour à tous
 ```
 
-The verbose flag can also be used:
+A verbose flag can also be used:
 ```
 $ libretrans -v fr:en "C'est la vie!"
 French: "C'est la vie!"
@@ -25,7 +25,7 @@ $ cargo install --path="."
 
 ## Command Line Arguments
 ```
-libretrans 0.1.5
+libretrans 0.1.6
 Grant Handy <grantshandy@gmail.com>
 Translates text from one language to another.
 
@@ -40,5 +40,6 @@ FLAGS:
 ARGS:
     <INPUT>:<OUTPUT>    Choose what languages to translate from.
                             Possible values: ["en", "ar", "zh", "fr", "de", "it", "pt", "ru", "es", "ja"]
+                            Tip: You can format languages like ":<OUTPUT>" to detect the input language.
     <TEXT>              What text to translate.
 ```
