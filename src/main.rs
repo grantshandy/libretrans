@@ -1,5 +1,5 @@
 use clap::{crate_version, App, Arg};
-use libretranslate::{translate, Language};
+use libretranslate::{translate, translate_url, Language};
 
 mod tools;
 
@@ -28,9 +28,17 @@ async fn main() {
             Arg::with_name("verbose")
                 .long("verbose")
                 .short("v")
-                .help("run with verbose output.")
+                .help("Run with verbose output.")
                 .required(false)
                 .takes_value(false)
+        )
+        .arg(
+            Arg::with_name("url")
+                .long("url")
+                .short("u")
+                .help("What libretranslate instance to translate from.")
+                .required(false)
+                .takes_value(true)
         )
         .get_matches();
 
@@ -52,8 +60,18 @@ async fn main() {
     };
 
     // Translate it, then send the data or error off to their respective functions.
-    match translate(input, output, text).await {
-        Ok(data) => tools::print_data(data, matches.clone()),
-        Err(error) => tools::trans_error("Translation error:", &error.to_string(), text, matches.clone()),
-    };
+    match matches.value_of("url") {
+        Some(data) => {
+            match translate_url(input, output, text, data).await {
+                Ok(data) => tools::print_data(data, matches.clone()),
+                Err(error) => tools::trans_error("Translation error:", &error.to_string(), text, matches.clone()),
+            };
+        },
+        None => {
+            match translate(input, output, text).await {
+                Ok(data) => tools::print_data(data, matches.clone()),
+                Err(error) => tools::trans_error("Translation error:", &error.to_string(), text, matches.clone()),
+            };
+        },
+    }
 }
